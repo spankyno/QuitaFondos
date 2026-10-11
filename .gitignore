@@ -5,5 +5,6 @@ coverage/
 .DS_Store
 *.log
 bun.lock*
+package-lock.json
 .env*
 !.env.example
