@@ -45,12 +45,18 @@ El resultado compilado se guardará en la carpeta `dist/`.
 La aplicación es completamente estática (Single Page Application):
 
 1. Conecta tu repositorio Git a **Cloudflare Pages**.
-2. Parámetros de compilación:
+2. Parámetros de compilación recomendados:
    - **Framework preset**: `Vite`
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-   - **Node.js version**: `20` o superior (configurar variable de entorno `NODE_VERSION=20` en Cloudflare si es necesario).
-3. Despliega en el plan gratuito de Cloudflare Pages.
+3. **Resolución de incompatibilidad de Bun en Cloudflare Pages**:
+   - Por defecto, Cloudflare Pages incluye una versión antigua de Bun (`v1.2.15`).
+   - **Opción recomendada (usar Node/npm)**: Asegúrate de eliminar `bun.lock` del repositorio (`git rm bun.lock`). Cloudflare Pages detectará automáticamente `package-lock.json` y utilizará `npm ci` con Node.js sin ningún problema.
+   - **Opción alternativa (usar Bun actualizado)**: Si prefieres compilar con Bun en Cloudflare Pages, ve a **Settings > Environment variables** en el panel de Cloudflare Pages y añade:
+     - Variable: `BUN_VERSION`
+     - Valor: `1.4.2` (o `latest`)
+     Esto actualizará Bun en Cloudflare a la versión compatible con `lockfileVersion: 2`.
+4. Despliega en el plan gratuito de Cloudflare Pages.
 
 ---
 
