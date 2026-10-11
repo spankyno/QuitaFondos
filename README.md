@@ -49,13 +49,16 @@ La aplicación es completamente estática (Single Page Application):
    - **Framework preset**: `Vite`
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-3. **Resolución de incompatibilidad de Bun en Cloudflare Pages**:
-   - Por defecto, Cloudflare Pages incluye una versión antigua de Bun (`v1.2.15`).
-   - **Opción recomendada (usar Node/npm)**: Asegúrate de eliminar `bun.lock` del repositorio (`git rm bun.lock`). Cloudflare Pages detectará automáticamente `package-lock.json` y utilizará `npm ci` con Node.js sin ningún problema.
-   - **Opción alternativa (usar Bun actualizado)**: Si prefieres compilar con Bun en Cloudflare Pages, ve a **Settings > Environment variables** en el panel de Cloudflare Pages y añade:
-     - Variable: `BUN_VERSION`
-     - Valor: `1.4.2` (o `latest`)
-     Esto actualizará Bun en Cloudflare a la versión compatible con `lockfileVersion: 2`.
+3. **Despliegue sin errores de lockfile en Cloudflare Pages**:
+   - Para evitar errores de incompatibilidad entre sistemas operativos (`Missing: @tailwindcss/oxide-darwin... from lock file` con `npm ci` o `Unknown lockfile version` con `bun`), se ha configurado el proyecto para que Cloudflare Pages instale directamente mediante `npm install` sin depender de archivos de bloqueo específicos de una sola plataforma.
+   - En tu repositorio local ejecuta:
+     ```bash
+     git rm package-lock.json bun.lock
+     git commit -m "fix: use dynamic npm install for cloudflare pages"
+     git push
+     ```
+   - En Cloudflare Pages (*Settings > Environment variables*), se recomienda configurar:
+     - `NODE_VERSION=20` (o `22`)
 4. Despliega en el plan gratuito de Cloudflare Pages.
 
 ---
