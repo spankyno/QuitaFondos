@@ -32,6 +32,7 @@ import {
   formatFileSize,
 } from './utils/fileHelpers';
 import { triggerCelebrationConfetti } from './utils/confetti';
+import { AboutModal } from './components/AboutModal';
 
 type AppState =
   | 'idle'
@@ -66,6 +67,7 @@ export default function App() {
   const [hardwareInfo, setHardwareInfo] = useState<string>('Detectando hardware...');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // Datos de las imágenes procesadas
   const [data, setData] = useState<ProcessedData>({
@@ -661,20 +663,60 @@ export default function App() {
         )}
       </main>
 
-      {/* Pie de página discreto */}
-      <footer className="w-full max-w-4xl mx-auto px-6 py-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-400 gap-3">
-        <div className="flex items-center gap-2">
-          <span>Inferencia 100% on-device</span>
-          <span aria-hidden="true">·</span>
-          <span>Sin servidores externos</span>
-          <span aria-hidden="true">·</span>
-          <span>Sin APIs de pago</span>
+      {/* Pie de página con enlaces y derechos de autor */}
+      <footer className="w-full max-w-4xl mx-auto px-6 py-6 border-t border-zinc-900 flex flex-col gap-3 text-xs text-zinc-400">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <button
+              onClick={() => setIsAboutOpen(true)}
+              className="text-zinc-300 hover:text-white underline underline-offset-4 transition-colors cursor-pointer"
+            >
+              Acerca de...
+            </button>
+            <span aria-hidden="true" className="text-zinc-600">·</span>
+            <a
+              href="https://aitorsanchez.pages.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-zinc-200 transition-colors"
+            >
+              Blog
+            </a>
+            <span aria-hidden="true" className="text-zinc-600">·</span>
+            <a
+              href="https://aitorhub.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-zinc-200 transition-colors"
+            >
+              Aitor Hub
+            </a>
+            <span aria-hidden="true" className="text-zinc-600">·</span>
+            <a
+              href="https://aitorsanchez.pages.dev/contacto"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-zinc-200 transition-colors"
+            >
+              Contacto
+            </a>
+          </div>
+
+          <div className="flex items-center gap-2 text-zinc-500 text-[11px]">
+            <span>Inferencia 100% on-device</span>
+            <span aria-hidden="true">·</span>
+            <span>ONNX Runtime Web + IS-Net</span>
+          </div>
         </div>
 
-        <div>
-          <span>ONNX Runtime Web + Modelo IS-Net</span>
+        <div className="flex flex-col sm:flex-row items-center justify-between pt-2 border-t border-zinc-900/60 text-[11px] text-zinc-500 gap-1.5">
+          <span>Autor: Aitor Sánchez Gutiérrez © 2026 Todos los derechos reservados.</span>
+          <span>Procesamiento privado en tu dispositivo</span>
         </div>
       </footer>
+
+      {/* Modal / Página Acerca de... */}
+      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </div>
   );
 }
