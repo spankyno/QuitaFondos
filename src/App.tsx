@@ -31,6 +31,7 @@ import {
   downloadBlob,
   formatFileSize,
 } from './utils/fileHelpers';
+import { triggerCelebrationConfetti } from './utils/confetti';
 
 type AppState =
   | 'idle'
@@ -145,8 +146,9 @@ export default function App() {
         transparentUrl,
       }));
 
-      // Paso 5: Descarga automática inmediata
+      // Paso 5: Descarga automática inmediata y celebración
       downloadBlob(transparentBlob, transparentFilename);
+      triggerCelebrationConfetti();
       showToast('Imagen procesada. Descarga iniciada.');
 
       // Paso 11: Mostrar pantalla con opción «¿Quieres añadir otro fondo?»
@@ -187,8 +189,9 @@ export default function App() {
         compositeFilename,
       }));
 
-      // Descarga automática del resultado fusionado
+      // Descarga automática del resultado fusionado y celebración
       downloadBlob(compositeBlob, compositeFilename);
+      triggerCelebrationConfetti();
       showToast('Fondo aplicado. Descarga iniciada.');
 
       setAppState('composite-ready');
@@ -471,7 +474,8 @@ export default function App() {
                   <a
                     href={data.transparentUrl}
                     download={data.transparentFilename}
-                    className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950/85 hover:bg-zinc-950 text-zinc-200 text-xs font-medium rounded-lg border border-zinc-700/70 shadow-md backdrop-blur-sm transition-all"
+                    onClick={() => triggerCelebrationConfetti()}
+                    className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950/85 hover:bg-zinc-950 text-zinc-200 text-xs font-medium rounded-lg border border-zinc-700/70 shadow-md backdrop-blur-sm transition-all cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Descargar de nuevo</span>
@@ -601,7 +605,8 @@ export default function App() {
                 <a
                   href={data.compositeUrl}
                   download={data.compositeFilename}
-                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-xs font-semibold rounded-xl shadow transition-all"
+                  onClick={() => triggerCelebrationConfetti()}
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-900 text-xs font-semibold rounded-xl shadow transition-all cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>Descargar de nuevo</span>
