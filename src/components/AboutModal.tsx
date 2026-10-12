@@ -77,6 +77,16 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </p>
           </div>
 
+          {/* Banner visual de la aplicación (og-image.png) */}
+          <div className="w-full rounded-xl overflow-hidden border border-zinc-800/90 shadow-lg bg-zinc-950/80">
+            <img
+              src="/og-image.png"
+              alt="Eliminador de Fondos con IA Local - QuitaFondos"
+              className="w-full h-auto object-cover max-h-72 sm:max-h-80 transition-all hover:scale-[1.01]"
+              loading="lazy"
+            />
+          </div>
+
           {/* Funcionalidades */}
           <div className="bg-zinc-950/60 border border-zinc-800/80 rounded-xl p-4 sm:p-5 space-y-3">
             <div className="flex items-center gap-2 text-zinc-200 font-medium">
