@@ -5,14 +5,12 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000
   Cross-Origin-Opener-Policy: same-origin
-  # CSP en vigor: directivas seguras que no afectan al funcionamiento.
-  Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
-  # CSP completa en modo informe: revisa la consola del navegador (avisos "[Report Only]").
-  # Cuando no aparezca ninguna infracción, cambia "Content-Security-Policy-Report-Only"
-  # por "Content-Security-Policy".
+  # CSP en vigor. Notas:
   # - blob: en script-src y connect-src: la librería importa/descarga el runtime ONNX desde blob URLs.
-  # - 'unsafe-eval': @imgly/background-removal (ndarray) usa new Function(); con la CSP en vigor, el navegador lo bloquearía.
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; connect-src 'self' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; img-src 'self' data: blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:
+  # - 'unsafe-eval': @imgly/background-removal (ndarray) usa new Function().
+  # - aitors-hub-dashboard.asanchezgu.workers.dev: contador de visitas del autor.
+  # Si añades un recurso externo nuevo, amplía aquí la directiva correspondiente.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; connect-src 'self' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; img-src 'self' data: blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
 
 # Los fragmentos del modelo se nombran por contenido: cacheables de forma permanente.
 /models/*
