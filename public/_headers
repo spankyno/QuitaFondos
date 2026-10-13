@@ -2,3 +2,21 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000
+  Cross-Origin-Opener-Policy: same-origin
+  # CSP en vigor: directivas seguras que no afectan al funcionamiento.
+  Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+  # CSP completa en modo informe: revisa la consola del navegador (avisos "[Report Only]").
+  # Cuando no aparezca ninguna infracción, cambia "Content-Security-Policy-Report-Only"
+  # por "Content-Security-Policy". 'blob:' en script-src es necesario porque la librería
+  # importa el runtime ONNX desde un blob URL.
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; connect-src 'self' https://aitors-hub-dashboard.asanchezgu.workers.dev; img-src 'self' data: blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:
+
+# Los fragmentos del modelo se nombran por contenido: cacheables de forma permanente.
+/models/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/models/resources.json
+  ! Cache-Control
+  Cache-Control: public, max-age=3600
