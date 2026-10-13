@@ -26,7 +26,7 @@ import {
   createPresetBackgroundBlob,
 } from './utils/canvasComposition';
 import {
-  isValidImageFile,
+  validateImageFile,
   generateOutputFilename,
   downloadBlob,
   formatFileSize,
@@ -55,6 +55,24 @@ interface ProcessedData {
   compositeFilename: string;
 }
 
+const EMPTY_DATA: ProcessedData = {
+  originalFile: null,
+  originalUrl: null,
+  originalFilename: 'imagen.png',
+  transparentBlob: null,
+  transparentUrl: null,
+  transparentFilename: 'imagen_sin_fondo.png',
+  compositeBlob: null,
+  compositeUrl: null,
+  compositeFilename: 'imagen_con_fondo.png',
+};
+
+function revokeDataUrls(d: ProcessedData) {
+  if (d.originalUrl) URL.revokeObjectURL(d.originalUrl);
+  if (d.transparentUrl) URL.revokeObjectURL(d.transparentUrl);
+  if (d.compositeUrl) URL.revokeObjectURL(d.compositeUrl);
+}
+
 export default function App() {
   const [appState, setAppState] = useState<AppState>('idle');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -70,17 +88,12 @@ export default function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // Datos de las imágenes procesadas
-  const [data, setData] = useState<ProcessedData>({
-    originalFile: null,
-    originalUrl: null,
-    originalFilename: 'imagen.png',
-    transparentBlob: null,
-    transparentUrl: null,
-    transparentFilename: 'imagen_sin_fondo.png',
-    compositeBlob: null,
-    compositeUrl: null,
-    compositeFilename: 'imagen_con_fondo.png',
-  });
+  const [data, setData] = useState<ProcessedData>(EMPTY_DATA);
+
+  // Referencias para liberar object URLs y evitar procesados simultáneos
+  const dataRef = useRef<ProcessedData>(data);
+  dataRef.current = data;
+  const busyRef = useRef(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
@@ -93,11 +106,9 @@ export default function App() {
   }, []);
 
   // Limpieza de URLs creadas al desmontar o resetear
-  const cleanUrls = useCallback(() => {
-    if (data.originalUrl) URL.revokeObjectURL(data.originalUrl);
-    if (data.transparentUrl) URL.revokeObjectURL(data.transparentUrl);
-    if (data.compositeUrl) URL.revokeObjectURL(data.compositeUrl);
-  }, [data]);
+  const cleanUrls = useCallback(() => revokeDataUrls(dataRef.current), []);
+
+  useEffect(() => () => revokeDataUrls(dataRef.current), []);
 
   // Mostrar mensaje temporal discreto
   const showToast = (msg: string) => {
@@ -109,27 +120,41 @@ export default function App() {
 
   // Procesar imagen original y eliminar fondo
   const processOriginalImage = async (file: File) => {
-    const validation = isValidImageFile(file);
-    if (!validation.valid) {
-      setErrorMessage(validation.reason || 'Archivo no válido.');
-      setAppState('error');
-      return;
+    if (busyRef.current) return;
+    busyRef.current = true;
+
+    try {
+      const validation = await validateImageFile(file);
+      if (!validation.valid) {
+        setErrorMessage(validation.reason || 'Archivo no válido.');
+        setAppState('error');
+        return;
+      }
+
+      setErrorMessage(null);
+
+      // Liberar las URLs de una imagen anterior y partir de un estado limpio
+      revokeDataUrls(dataRef.current);
+      const originalUrl = URL.createObjectURL(file);
+      const transparentFilename = generateOutputFilename(file.name, '_sin_fondo');
+
+      setData({
+        ...EMPTY_DATA,
+        originalFile: file,
+        originalUrl,
+        originalFilename: file.name,
+        transparentFilename,
+      });
+
+      setAppState('loading-model');
+
+      await runBackgroundRemoval(file, transparentFilename);
+    } finally {
+      busyRef.current = false;
     }
+  };
 
-    setErrorMessage(null);
-    const originalUrl = URL.createObjectURL(file);
-    const transparentFilename = generateOutputFilename(file.name, '_sin_fondo');
-
-    setData((prev) => ({
-      ...prev,
-      originalFile: file,
-      originalUrl,
-      originalFilename: file.name,
-      transparentFilename,
-    }));
-
-    setAppState('loading-model');
-
+  const runBackgroundRemoval = async (file: File, transparentFilename: string) => {
     try {
       const transparentBlob = await removeBackgroundLocally(file, (info) => {
         setProgressInfo(info);
@@ -157,9 +182,9 @@ export default function App() {
       setAppState('transparent-ready');
     } catch (err: any) {
       console.error('Error durante la inferencia local:', err);
+      // Mensaje genérico: el detalle técnico queda solo en la consola
       setErrorMessage(
-        err?.message ||
-          'No se pudo procesar la imagen. Verifica que el archivo no esté dañado e inténtalo de nuevo.'
+        'No se pudo procesar la imagen. Verifica que el archivo no esté dañado e inténtalo de nuevo.'
       );
       setAppState('error');
     }
@@ -170,7 +195,7 @@ export default function App() {
     if (!data.transparentBlob) return;
 
     if (bgSource instanceof File) {
-      const validation = isValidImageFile(bgSource);
+      const validation = await validateImageFile(bgSource);
       if (!validation.valid) {
         showToast(validation.reason || 'Formato de fondo no válido.');
         return;
@@ -184,12 +209,17 @@ export default function App() {
       const compositeUrl = URL.createObjectURL(compositeBlob);
       const compositeFilename = generateOutputFilename(data.originalFilename, '_con_fondo');
 
+      // Si ya había un resultado anterior, liberar su URL
+      const previousCompositeUrl = dataRef.current.compositeUrl;
+
       setData((prev) => ({
         ...prev,
         compositeBlob,
         compositeUrl,
         compositeFilename,
       }));
+
+      if (previousCompositeUrl) URL.revokeObjectURL(previousCompositeUrl);
 
       // Descarga automática del resultado fusionado y celebración
       downloadBlob(compositeBlob, compositeFilename);
@@ -274,17 +304,7 @@ export default function App() {
   // Reiniciar estado para procesar otra imagen
   const handleReset = () => {
     cleanUrls();
-    setData({
-      originalFile: null,
-      originalUrl: null,
-      originalFilename: 'imagen.png',
-      transparentBlob: null,
-      transparentUrl: null,
-      transparentFilename: 'imagen_sin_fondo.png',
-      compositeBlob: null,
-      compositeUrl: null,
-      compositeFilename: 'imagen_con_fondo.png',
-    });
+    setData(EMPTY_DATA);
     setAppState('idle');
     setErrorMessage(null);
     setToastMessage(null);

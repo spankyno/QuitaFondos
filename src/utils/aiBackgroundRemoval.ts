@@ -15,6 +15,17 @@ export interface AIProgressInfo {
   backend?: 'WebGPU' | 'WebAssembly';
 }
 
+/**
+ * Origen desde el que se cargan el modelo y el runtime WASM.
+ * Por defecto, el propio dominio (public/models/, generado por
+ * scripts/fetch-models.mjs). Se puede sobrescribir con VITE_MODEL_BASE_URL.
+ */
+function getModelBaseUrl(): string {
+  const custom = (import.meta.env.VITE_MODEL_BASE_URL as string | undefined)?.trim();
+  const base = custom || `${window.location.origin}${import.meta.env.BASE_URL}models/`;
+  return base.endsWith('/') ? base : `${base}/`;
+}
+
 let cachedGpuSupport: boolean | null = null;
 
 export async function checkWebGpuSupport(): Promise<boolean> {
@@ -37,7 +48,8 @@ export async function checkWebGpuSupport(): Promise<boolean> {
 
 /**
  * Elimina el fondo de una imagen localmente en el navegador.
- * Nunca envía datos al exterior.
+ * La imagen del usuario nunca se envía al exterior: el modelo y el runtime se
+ * sirven desde el propio dominio de la aplicación (ver scripts/fetch-models.mjs).
  */
 export async function removeBackgroundLocally(
   imageSource: Blob | File | string,
@@ -48,6 +60,7 @@ export async function removeBackgroundLocally(
   const backendName = hasGpu ? 'WebGPU' : 'WebAssembly';
 
   const createConfig = (device: 'gpu' | 'cpu'): Config => ({
+    publicPath: getModelBaseUrl(),
     device,
     model: 'isnet_fp16',
     output: {

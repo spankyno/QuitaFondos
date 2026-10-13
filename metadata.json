@@ -1,6 +1,5 @@
 {
   "name": "Eliminador de Fondos con IA Local",
-  "description": "Herramienta minimalista para eliminar fondos y fusionar imágenes con IA local y privada en el navegador.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "description": "Herramienta minimalista para eliminar fondos y fusionar imágenes con IA local en el navegador. Las imágenes no se envían a ningún servidor.",
+  "requestFramePermissions": []
 }

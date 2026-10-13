@@ -73,7 +73,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             <p className="text-zinc-400 leading-relaxed">
               Herramienta web ultra-minimalista diseñada para eliminar automáticamente el fondo
               de imágenes fotográficas mediante inteligencia artificial ejecutada íntegramente
-              en el navegador del usuario, sin intermediarios ni servidores externos.
+              en el navegador del usuario. Tus imágenes no se envían a ningún servidor.
             </p>
           </div>
 
@@ -116,10 +116,10 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div className="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-4 sm:p-5">
             <div className="flex items-center gap-2 text-emerald-300 font-medium mb-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Privacidad absoluta on-device</span>
+              <span>Tus imágenes se quedan en tu dispositivo</span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              Tus fotografías nunca abandonan tu ordenador o teléfono. Todo el cálculo matricial, la inferencia neuronal y la composición se realizan en la memoria RAM y GPU local de tu propio dispositivo. Sin telemetría, sin cookies invasivas y sin bases de datos remotas.
+              Tus fotografías nunca abandonan tu ordenador o teléfono. Todo el cálculo matricial, la inferencia neuronal y la composición se realizan en la memoria RAM y GPU local de tu propio dispositivo. El único dato que se recoge es tu dirección IP, mediante un contador de visitas propio del autor (Aitor Hub). No se usan cookies ni se almacena ninguna imagen.
             </p>
           </div>
 

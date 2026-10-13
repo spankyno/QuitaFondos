@@ -2,7 +2,14 @@
 
 Aplicación web minimalista para eliminar fondos de imágenes y fusionar fondos mediante Inteligencia Artificial ejecutada 100% de forma local en el navegador del usuario.
 
-Sin envíos de imágenes a servidores externos, sin registros, sin APIs comerciales de pago y con total privacidad.
+Tus imágenes no se envían a ningún servidor y no se usan APIs comerciales de pago.
+
+### Privacidad
+
+- **Imágenes**: se procesan íntegramente en el dispositivo del usuario; nunca se suben ni se almacenan.
+- **Único dato recogido**: la **dirección IP** del visitante, mediante un contador de visitas propio del autor (Aitor Hub, `tracker.js`). No se usan cookies.
+- **Modelo y runtime**: se sirven desde el propio dominio (`/models/`), no desde CDN de terceros (ver sección 4).
+- La IP es un dato personal según el RGPD: si despliegas tu propia instancia con este contador, menciónalo en tu aviso de privacidad.
 
 ---
 
@@ -49,23 +56,20 @@ La aplicación es completamente estática (Single Page Application):
    - **Framework preset**: `Vite`
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-3. **Despliegue sin errores de lockfile en Cloudflare Pages**:
-   - Para evitar errores de incompatibilidad entre sistemas operativos (`Missing: @tailwindcss/oxide-darwin... from lock file` con `npm ci` o `Unknown lockfile version` con `bun`), se ha configurado el proyecto para que Cloudflare Pages instale directamente mediante `npm install` sin depender de archivos de bloqueo específicos de una sola plataforma.
-   - En tu repositorio local ejecuta:
-     ```bash
-     git rm package-lock.json bun.lock
-     git commit -m "fix: use dynamic npm install for cloudflare pages"
-     git push
-     ```
-   - En Cloudflare Pages (*Settings > Environment variables*), se recomienda configurar:
-     - `NODE_VERSION=20` (o `22`)
-4. Despliega en el plan gratuito de Cloudflare Pages.
+3. **Modelo y runtime en tu propio dominio**: `npm run build` (y `npm run dev`) ejecutan antes `scripts/fetch-models.mjs`, que descarga el modelo `isnet_fp16` y el runtime ONNX a `public/models/` y **verifica el SHA-256 de cada fragmento** contra `scripts/models.lock.json`. Si algo no coincide, el build falla.
+   - La primera vez (o al subir la versión de `@imgly/background-removal`) ejecuta `npm run fetch-models -- --update-lock` y haz commit de `scripts/models.lock.json`.
+   - En Cloudflare Pages define `MODELS_STRICT=1` para que el build falle si falta el lock.
+4. **Lockfile**: se versiona `package-lock.json` y se instala con `npm ci`. Si aparece `Missing: @tailwindcss/oxide-... from lock file`, regenera el lock con `rm -rf node_modules package-lock.json && npm install` (el lock incluye los binarios opcionales de todas las plataformas). `bun.lock` está ignorado porque Cloudflare lo detecta y falla.
+   - En Cloudflare Pages (*Settings > Environment variables*): `NODE_VERSION=20` (o `22`) y `MODELS_STRICT=1`.
+   - Revisa dependencias con `npm run audit`.
+5. **Cabeceras de seguridad**: `public/_headers` incluye una CSP completa en modo *Report-Only*. Tras comprobar en la consola que no hay infracciones, pásala a `Content-Security-Policy`.
+6. Despliega en el plan gratuito de Cloudflare Pages.
 
 ---
 
 ## 5. Modelo de Inteligencia Artificial Utilizado
 
-- **Modelo**: **IS-Net (InSPyReNet - Intelligent Scalable Object/Person Matting)** optimizado en formato ONNX (`isnet_fp16` / `isnet_quint8`).
+- **Modelo**: **IS-Net (InSPyReNet - Intelligent Scalable Object/Person Matting)** optimizado en formato ONNX (`isnet_fp16`).
 - **Motor de inferencia**: **ONNX Runtime Web** (`@imgly/background-removal`).
 - **Aceleración**: WebGPU (prioritaria en navegadores y hardware compatibles) con conmutación automática y transparente a WebAssembly SIMD multihilo en caso de falta de soporte de GPU.
 
@@ -80,7 +84,7 @@ La aplicación es completamente estática (Single Page Application):
 
 ## 7. Tamaño Aproximado de Descarga
 
-- **Pesos del modelo neuronal**: ~40 MB a ~80 MB (se descargan una única vez y quedan almacenados en la caché del navegador para usos posteriores inmediatos).
+- **Pesos del modelo neuronal**: ~40 MB a ~80 MB (se descargan desde tu propio dominio una única vez y quedan en la caché del navegador).
 - **Runtime WebAssembly / WebGPU**: ~5 MB a ~10 MB.
 - **Bundle JavaScript de la aplicación**: < 150 KB gzipped.
 
