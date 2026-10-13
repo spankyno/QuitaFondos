@@ -9,9 +9,10 @@
   Content-Security-Policy: object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
   # CSP completa en modo informe: revisa la consola del navegador (avisos "[Report Only]").
   # Cuando no aparezca ninguna infracción, cambia "Content-Security-Policy-Report-Only"
-  # por "Content-Security-Policy". 'blob:' en script-src es necesario porque la librería
-  # importa el runtime ONNX desde un blob URL.
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; connect-src 'self' https://aitors-hub-dashboard.asanchezgu.workers.dev; img-src 'self' data: blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:
+  # por "Content-Security-Policy".
+  # - blob: en script-src y connect-src: la librería importa/descarga el runtime ONNX desde blob URLs.
+  # - 'unsafe-eval': @imgly/background-removal (ndarray) usa new Function(); con la CSP en vigor, el navegador lo bloquearía.
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; connect-src 'self' blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; img-src 'self' data: blob: https://aitors-hub-dashboard.asanchezgu.workers.dev; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:
 
 # Los fragmentos del modelo se nombran por contenido: cacheables de forma permanente.
 /models/*
